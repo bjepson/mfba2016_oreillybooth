@@ -14,11 +14,10 @@ def findColor(img, lower, upper):
     (_, cnts, _) = cv2.findContours(shapeMask.copy(), cv2.RETR_EXTERNAL,
         cv2.CHAIN_APPROX_SIMPLE)
     print "I found %d shapes" % (len(cnts))
-    cv2.imshow("Mask", shapeMask)
-    while (1):
-        if cv2.waitKey(0) == 27:
-            break
-    cv2.destroyAllWindows()
+    #cv2.imshow("Mask", shapeMask)
+    #while (1):
+        #if cv2.waitKey(0) == 27:
+            #break
 
     # loop over the contours
     for c in cnts:
@@ -32,34 +31,35 @@ def findColor(img, lower, upper):
 
 # initialize the camera and grab a reference to the raw camera capture
 camera = PiCamera()
-rawCapture = PiRGBArray(camera)
-
 # allow the camera to warmup
 time.sleep(0.1)
 
-# grab an image from the camera
-camera.capture(rawCapture, format="bgr")
-image = rawCapture.array
-hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+cv2.namedWindow("cv", 1)
+while (True):
+    rawCapture = PiRGBArray(camera)
 
-# find all the 'green' shapes in the image
-lower = np.array([60, 70, 70])
-upper = np.array([110, 255, 255])
-green_found = findColor(hsv, lower, upper)
+    # grab an image from the camera
+    camera.capture(rawCapture, format="bgr")
+    image = rawCapture.array
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-# find all the 'pink' shapes in the image
-lower = np.array([300/2, 0, 20])
-upper = np.array([360/2, 255, 255])
-violet_found = findColor(hsv, lower, upper)
+    # find all the 'green' shapes in the image
+    lower = np.array([60, 70, 70])
+    upper = np.array([110, 255, 255])
+    green_found = findColor(hsv, lower, upper)
+    
+    # find all the 'pink' shapes in the image
+    lower = np.array([300/2, 0, 20])
+    upper = np.array([360/2, 255, 255])
+    violet_found = findColor(hsv, lower, upper)
+    
+    # find all the 'violet' shapes in the image
+    lower = np.array([260/2, 50, 50])
+    upper = np.array([299/2, 255, 255])
+    violet_found = findColor(hsv, lower, upper)
 
-# find all the 'violet' shapes in the image
-lower = np.array([260/2, 50, 50])
-upper = np.array([299/2, 255, 255])
-violet_found = findColor(hsv, lower, upper)
-
-image = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
-cv2.imshow("Image", image)
-while (1):
-    if cv2.waitKey(0) == 27:
+    image = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+    image = cv2.resize(image, (0, 0), fx=0.5, fy=0.5)
+    cv2.imshow("cv", image)
+    if cv2.waitKey(10) == 27:
         break
-cv2.destroyAllWindows()
