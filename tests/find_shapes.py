@@ -7,29 +7,28 @@ import cv2
 
 def findColor(image, lower, upper):
 
-	found = False
-	shapeMask = cv2.inRange(image, lower, upper)
+    found = False
+    shapeMask = cv2.inRange(image, lower, upper)
 
-	# find the contours in the mask
-	(_, cnts, _) = cv2.findContours(shapeMask.copy(), cv2.RETR_EXTERNAL,
-		cv2.CHAIN_APPROX_SIMPLE)
-	print "I found %d shapes" % (len(cnts))
-	cv2.imshow("Mask", shapeMask)
-	while (1):
-		if cv2.waitKey(0) == 27:
-			break
-	cv2.destroyAllWindows()
+    # find the contours in the mask
+    (_, cnts, _) = cv2.findContours(shapeMask.copy(), cv2.RETR_EXTERNAL,
+        cv2.CHAIN_APPROX_SIMPLE)
+    print "I found %d shapes" % (len(cnts))
+#    cv2.imshow("Mask", shapeMask)
+#    while (1):
+#        if cv2.waitKey(0) == 27:
+#            break
+#    cv2.destroyAllWindows()
 
-	# loop over the contours
-	for c in cnts:
-		print cv2.contourArea(c)
-		#approx = cv2.approxPolyDP(c, .01 * cv2.arcLength(c, True), True)
-		#if len(approx) == 4:
-		if cv2.contourArea(c) > 10000:
-			print "book!"
-			found = True
-			cv2.drawContours(image, [c], -1, (0, 255, 0), 2)
-	return found
+    # loop over the contours
+    for c in cnts:
+        area = cv2.contourArea(c)
+        #print area
+        if area > 10000:
+            print "book!"
+            found = True
+            cv2.drawContours(image, [c], -1, (0, 255, 0), 2)
+    return found
 
 # initialize the camera and grab a reference to the raw camera capture
 camera = PiCamera()
@@ -47,12 +46,6 @@ lower = np.array([0, 60, 0])
 upper = np.array([30, 90, 30])
 green_found = findColor(image, lower, upper)
 
-cv2.imshow("Image", image)
-while (1):
-	if cv2.waitKey(0) == 27:
-		break
-cv2.destroyAllWindows()
-
 # find all the 'violet' shapes in the image
 lower = np.array([45, 55, 85])
 upper = np.array([75, 85, 105])
@@ -60,6 +53,6 @@ violet_found = findColor(image, lower, upper)
 
 cv2.imshow("Image", image)
 while (1):
-	if cv2.waitKey(0) == 27:
-		break
+    if cv2.waitKey(0) == 27:
+        break
 cv2.destroyAllWindows()
