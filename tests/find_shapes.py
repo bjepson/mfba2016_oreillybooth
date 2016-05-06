@@ -39,7 +39,11 @@ def findColor(img, lower, upper):
         if area > 10000:
             print "book of size " + str(area)
             found = True
-            cv2.drawContours(img, [c], -1, ((lower[0] + upper[0])/2, 128, 255), 8)
+            cv2.drawContours(img, [c], -1, (
+                (lower[0] + upper[0])/2, 
+                128, #(lower[1] + upper[1])/2, 
+                200 #(lower[2] + upper[2])/2, 
+                ), 4)
     return found
 
 # initialize the camera and grab a reference to the raw camera capture
@@ -59,26 +63,36 @@ while (True):
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
     # find all the 'green' shapes in the image
-    lower = np.array([50, 50, 50])
-    upper = np.array([80, 255, 255])
+    lower = np.array([35, 50, 50])
+    upper = np.array([70, 255, 255])
     green_found = findColor(hsv, lower, upper)
     
+    # find all the 'blue' shapes in the image
+    lower = np.array([85, 50, 50])
+    upper = np.array([105, 255, 255])
+    blue_found = findColor(hsv, lower, upper)
+    
     # find all the 'pink' shapes in the image
-    lower = np.array([320/2, 100, 100])
-    upper = np.array([340/2, 255, 255])
+    lower = np.array([320/2, 100, 200])
+    upper = np.array([355/2, 255, 255])
     pink_found = findColor(hsv, lower, upper)
 
+    # find all the 'orange' shapes in the image
+    lower = np.array([5, 100, 100])
+    upper = np.array([12, 255, 255])
+    orange_found = findColor(hsv, lower, upper)
+
     # find all the 'red' shapes in the image
-    lower = np.array([341/2, 100, 100])
-    upper = np.array([360/2, 255, 255])
+    lower = np.array([0, 100, 100])
+    upper = np.array([5, 255, 255])
     red_found = findColor(hsv, lower, upper)
     
     # find all the 'violet' shapes in the image
-    lower = np.array([250/2, 50, 50])
-    upper = np.array([299/2, 255, 255])
+    lower = np.array([280/2, 80, 50])
+    upper = np.array([360/2, 150, 199])
     violet_found = findColor(hsv, lower, upper)
 
-    hsv = cv2.resize(hsv, (0, 0), fx=0.5, fy=0.5)
+    #hsv = cv2.resize(hsv, (0, 0), fx=0.5, fy=0.5)
     hsv_data=hsv[y_co,x_co]
     cv2.putText(hsv, 
                 str(hsv_data[0])+","+str(hsv_data[1])+","+str(hsv_data[2]), 
