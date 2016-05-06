@@ -22,9 +22,11 @@ def findColor(image, lower, upper):
 
 	# loop over the contours
 	for c in cnts:
-		approx = cv2.approxPolyDP(c, .01 * cv2.arcLength(c, True), True)
-		if len(approx) == 4:
-			print "Square!"
+		print cv2.contourArea(c)
+		#approx = cv2.approxPolyDP(c, .01 * cv2.arcLength(c, True), True)
+		#if len(approx) == 4:
+		if cv2.contourArea(c) > 10000:
+			print "book!"
 			found = True
 			cv2.drawContours(image, [c], -1, (0, 255, 0), 2)
 	return found
@@ -41,12 +43,18 @@ camera.capture(rawCapture, format="bgr")
 image = rawCapture.array
 
 # find all the 'green' shapes in the image
-lower = np.array([10, 70, 10])
+lower = np.array([0, 60, 0])
 upper = np.array([30, 90, 30])
 green_found = findColor(image, lower, upper)
 
+cv2.imshow("Image", image)
+while (1):
+	if cv2.waitKey(0) == 27:
+		break
+cv2.destroyAllWindows()
+
 # find all the 'violet' shapes in the image
-lower = np.array([55, 65, 85])
+lower = np.array([45, 55, 85])
 upper = np.array([75, 85, 105])
 violet_found = findColor(image, lower, upper)
 
