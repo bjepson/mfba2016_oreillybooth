@@ -22,7 +22,6 @@ def on_mouse(event,x,y,flag,param):
 cv2.namedWindow("camera", 1)
 camera = PiCamera()
 
-
 font = cv2.FONT_HERSHEY_SIMPLEX
 while True:
     rawCapture = PiRGBArray(camera)
