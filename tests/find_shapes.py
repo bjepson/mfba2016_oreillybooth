@@ -25,9 +25,9 @@ def findColor(img, lower, upper):
         area = cv2.contourArea(c)
         #print area
         if area > 10000:
-            print "book!"
+            print "book of size " + str(area)
             found = True
-            cv2.drawContours(img, [c], -1, (70, 255, 255), 2)
+            cv2.drawContours(img, [c], -1, (upper[0], 255, 255), 2)
     return found
 
 # initialize the camera and grab a reference to the raw camera capture
@@ -47,9 +47,14 @@ lower = np.array([60, 70, 70])
 upper = np.array([110, 255, 255])
 green_found = findColor(hsv, lower, upper)
 
+# find all the 'pink' shapes in the image
+lower = np.array([300/2, 0, 20])
+upper = np.array([360/2, 255, 255])
+violet_found = findColor(hsv, lower, upper)
+
 # find all the 'violet' shapes in the image
-lower = np.array([260/2, 70, 70])
-upper = np.array([280/2, 255, 255])
+lower = np.array([260/2, 50, 50])
+upper = np.array([299/2, 255, 255])
 violet_found = findColor(hsv, lower, upper)
 
 image = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
