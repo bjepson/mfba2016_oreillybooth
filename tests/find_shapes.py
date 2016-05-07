@@ -75,10 +75,13 @@ while (True):
     # grab an image from the camera
     camera.capture(rawCapture, format="bgr")
     image = rawCapture.array
+    image = cv2.blur(image, (5,5))
+
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
+    screen.clear()
     # find all the 'green' shapes in the image
-    lower = np.array([35, 50, 50])
+    lower = np.array([30, 50, 50])
     upper = np.array([70, 255, 255])
     green_found = findColor(hsv, lower, upper, "green", screen, 3)
     
@@ -88,12 +91,12 @@ while (True):
     blue_found = findColor(hsv, lower, upper, "blue", screen, 4)
     
     # find all the 'pink' shapes in the image
-    lower = np.array([320/2, 100, 200])
-    upper = np.array([355/2, 255, 255])
+    lower = np.array([160, 100, 150])
+    upper = np.array([180, 255, 255])
     pink_found = findColor(hsv, lower, upper, "pink", screen, 5)
 
     # find all the 'orange' shapes in the image
-    lower = np.array([5, 100, 100])
+    lower = np.array([5, 200, 200])
     upper = np.array([15, 255, 255])
     orange_found = findColor(hsv, lower, upper, "orange", screen, 6)
 
@@ -106,6 +109,11 @@ while (True):
     lower = np.array([280/2, 80, 50])
     upper = np.array([360/2, 150, 199])
     violet_found = findColor(hsv, lower, upper, "violet", screen, 8)
+
+    # find all the 'yellow' shapes in the image
+    lower = np.array([20, 200, 200])
+    upper = np.array([30, 255, 255])
+    orange_found = findColor(hsv, lower, upper, "yellow", screen, 9)
 
     for i in range (0, len(log)):
         pad.addstr(i + 1, 1, log[i])
