@@ -1,9 +1,12 @@
 # import the necessary packages
-import numpy as np
 from picamera.array import PiRGBArray
 from picamera import PiCamera
+from os import system
+import numpy as np
 import time
 import cv2
+import curses
+from collections import deque
 
 x_co = 0
 y_co = 0
@@ -12,13 +15,17 @@ def on_mouse(event,x,y,flag,param):
   global x_co
   global y_co
   global hsv_data
+  global log
   if(event==cv2.EVENT_MOUSEMOVE):
     x_co=x
     y_co=y
   if(event==cv2.EVENT_LBUTTONDOWN):
-    print "H:",hsv_data[0]," S:",hsv_data[1]," V:",hsv_data[2]
+    log.append( "H:" + str(hsv_data[0]) + 
+               " S:" + str(hsv_data[1]) + 
+               " V:" + str(hsv_data[2]))
+    log.popleft()
       
-def findColor(img, lower, upper):
+def findColor(img, lower, upper, color, screen, row):
 
     found = False
     shapeMask = cv2.inRange(img, lower, upper)
@@ -32,18 +39,20 @@ def findColor(img, lower, upper):
         #if cv2.waitKey(0) == 27:
             #break
 
+    status = color + ":"
     # loop over the contours
     for c in cnts:
         area = cv2.contourArea(c)
         #print area
-        if area > 10000:
-            print "book of size " + str(area)
+        if area > 15000:
+            status += " " + str(area)
             found = True
             cv2.drawContours(img, [c], -1, (
                 (lower[0] + upper[0])/2, 
                 128, #(lower[1] + upper[1])/2, 
                 200 #(lower[2] + upper[2])/2, 
                 ), 4)
+    screen.addstr(row, 2, status)
     return found
 
 # initialize the camera and grab a reference to the raw camera capture
@@ -54,6 +63,12 @@ time.sleep(0.1)
 cv2.namedWindow("cv", 1)
 cv2.setMouseCallback("cv",on_mouse, 0);
 
+screen = curses.initscr()
+screen.border(0)
+
+log = deque(["", "", "", "", "", "", "", "", "", ""])
+pad = curses.newpad(12, 26)
+pad.border(0)
 while (True):
     rawCapture = PiRGBArray(camera)
 
@@ -65,32 +80,37 @@ while (True):
     # find all the 'green' shapes in the image
     lower = np.array([35, 50, 50])
     upper = np.array([70, 255, 255])
-    green_found = findColor(hsv, lower, upper)
+    green_found = findColor(hsv, lower, upper, "green", screen, 3)
     
     # find all the 'blue' shapes in the image
     lower = np.array([85, 50, 50])
     upper = np.array([105, 255, 255])
-    blue_found = findColor(hsv, lower, upper)
+    blue_found = findColor(hsv, lower, upper, "blue", screen, 4)
     
     # find all the 'pink' shapes in the image
     lower = np.array([320/2, 100, 200])
     upper = np.array([355/2, 255, 255])
-    pink_found = findColor(hsv, lower, upper)
+    pink_found = findColor(hsv, lower, upper, "pink", screen, 5)
 
     # find all the 'orange' shapes in the image
     lower = np.array([5, 100, 100])
-    upper = np.array([12, 255, 255])
-    orange_found = findColor(hsv, lower, upper)
+    upper = np.array([15, 255, 255])
+    orange_found = findColor(hsv, lower, upper, "orange", screen, 6)
 
     # find all the 'red' shapes in the image
     lower = np.array([0, 100, 100])
     upper = np.array([5, 255, 255])
-    red_found = findColor(hsv, lower, upper)
+    red_found = findColor(hsv, lower, upper, "red", screen, 7)
     
     # find all the 'violet' shapes in the image
     lower = np.array([280/2, 80, 50])
     upper = np.array([360/2, 150, 199])
-    violet_found = findColor(hsv, lower, upper)
+    violet_found = findColor(hsv, lower, upper, "violet", screen, 8)
+
+    for i in range (0, len(log)):
+        pad.addstr(i + 1, 1, log[i])
+    screen.refresh()
+    pad.refresh(0,0, 10,2, 40,40)
 
     #hsv = cv2.resize(hsv, (0, 0), fx=0.5, fy=0.5)
     hsv_data=hsv[y_co,x_co]
@@ -103,3 +123,7 @@ while (True):
     cv2.imshow("cv", image)
     if cv2.waitKey(10) == 27:
         break
+
+curses.endwin()
+print '\n'.join(log)
+
