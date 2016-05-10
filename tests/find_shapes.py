@@ -8,9 +8,20 @@ import cv2
 import curses
 from collections import deque
 
+hsv_ranges = {
+        'green': { 'low': [30, 50, 50],    'high': [70,  255, 255] },
+        'blue':  { 'low': [85, 50, 50],    'high': [105, 255, 255] },
+        'pink':  { 'low': [160, 100, 150], 'high': [180, 255, 255] },
+        'orange':{ 'low': [5,   200, 200], 'high': [15,  255, 255] },
+        'red':   { 'low': [0,   100, 100], 'high': [5,   255, 255] },
+        'violet':{ 'low': [140,  80,  50], 'high': [180, 150, 199] },
+        'orange':{ 'low': [20,  200, 200], 'high': [ 30, 255, 255] }
+        }
+
 x_co = 0
 y_co = 0
 hsv_data = 0
+
 def on_mouse(event,x,y,flag,param):
   global x_co
   global y_co
@@ -20,9 +31,7 @@ def on_mouse(event,x,y,flag,param):
     x_co=x
     y_co=y
   if(event==cv2.EVENT_LBUTTONDOWN):
-    log.append( "H:" + str(hsv_data[0]) + 
-               " S:" + str(hsv_data[1]) + 
-               " V:" + str(hsv_data[2]))
+    log.append(hsv_data)
     log.popleft()
       
 def findColor(img, lower, upper, color, screen, row):
@@ -49,8 +58,8 @@ def findColor(img, lower, upper, color, screen, row):
             found = True
             cv2.drawContours(img, [c], -1, (
                 (lower[0] + upper[0])/2, 
-                128, #(lower[1] + upper[1])/2, 
-                200 #(lower[2] + upper[2])/2, 
+                255, #(lower[1] + upper[1])/2, 
+                255 #(lower[2] + upper[2])/2, 
                 ), 4)
     screen.addstr(row, 2, status)
     return found
@@ -61,7 +70,7 @@ camera = PiCamera()
 time.sleep(0.1)
 
 cv2.namedWindow("cv", 1)
-cv2.setMouseCallback("cv",on_mouse, 0);
+cv2.setMouseCallback("cv", on_mouse, 0);
 
 screen = curses.initscr()
 screen.border(0)
@@ -80,47 +89,24 @@ while (True):
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
     screen.clear()
-    # find all the 'green' shapes in the image
-    lower = np.array([30, 50, 50])
-    upper = np.array([70, 255, 255])
-    green_found = findColor(hsv, lower, upper, "green", screen, 3)
-    
-    # find all the 'blue' shapes in the image
-    lower = np.array([85, 50, 50])
-    upper = np.array([105, 255, 255])
-    blue_found = findColor(hsv, lower, upper, "blue", screen, 4)
-    
-    # find all the 'pink' shapes in the image
-    lower = np.array([160, 100, 150])
-    upper = np.array([180, 255, 255])
-    pink_found = findColor(hsv, lower, upper, "pink", screen, 5)
-
-    # find all the 'orange' shapes in the image
-    lower = np.array([5, 200, 200])
-    upper = np.array([15, 255, 255])
-    orange_found = findColor(hsv, lower, upper, "orange", screen, 6)
-
-    # find all the 'red' shapes in the image
-    lower = np.array([0, 100, 100])
-    upper = np.array([5, 255, 255])
-    red_found = findColor(hsv, lower, upper, "red", screen, 7)
-    
-    # find all the 'violet' shapes in the image
-    lower = np.array([280/2, 80, 50])
-    upper = np.array([360/2, 150, 199])
-    violet_found = findColor(hsv, lower, upper, "violet", screen, 8)
-
-    # find all the 'yellow' shapes in the image
-    lower = np.array([20, 200, 200])
-    upper = np.array([30, 255, 255])
-    orange_found = findColor(hsv, lower, upper, "yellow", screen, 9)
+    disp_row = 3
+    for k, v in hsv_ranges.iteritems():
+        lower = np.array(v['low'])
+        upper = np.array(v['high'])
+        color_found = findColor(hsv, lower, upper, k, screen, disp_row)
+        disp_row += 1
 
     for i in range (0, len(log)):
-        pad.addstr(i + 1, 1, log[i])
+        hsv_data = log[i]
+        if hsv_data != "":
+            logstr =   "H:" + str(hsv_data[0]) + \
+                      " S:" + str(hsv_data[1]) + \
+                      " V:" + str(hsv_data[2])
+            pad.addstr(i + 1, 1, logstr)
     screen.refresh()
     pad.refresh(0,0, 10,2, 40,40)
 
-    #hsv = cv2.resize(hsv, (0, 0), fx=0.5, fy=0.5)
+    hsv = cv2.resize(hsv, (0, 0), fx=0.75, fy=0.75)
     hsv_data=hsv[y_co,x_co]
     cv2.putText(hsv, 
                 str(hsv_data[0])+","+str(hsv_data[1])+","+str(hsv_data[2]), 
