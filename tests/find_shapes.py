@@ -65,7 +65,7 @@ def findColor(img, img2, lower, upper, color, screen, row):
     for c in cnts:
         area = cv2.contourArea(c)
         #print area
-        if area > 15000:
+        if area > 9000:
             status += " " + str(area)
             found = True
             cv2.drawContours(img2, [c], -1, (
@@ -78,7 +78,7 @@ def findColor(img, img2, lower, upper, color, screen, row):
     return found
 
 # initialize the camera and grab a reference to the raw camera capture
-camera = PiCamera()
+camera = PiCamera(resolution=(800,600))
 # allow the camera to warmup
 time.sleep(0.1)
 
@@ -99,7 +99,6 @@ while (True):
     image = rawCapture.array
     #image = cv2.resize(image, (0, 0), fx=0.75, fy=0.75)
     image = cv2.blur(image, (5,5))
-
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     hsv_copy = hsv.copy()
 
