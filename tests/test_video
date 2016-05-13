@@ -1,6 +1,7 @@
 import time
 from pyomxplayer import OMXPlayer
 
+# requires https://github.com/jbaiter/pyomxplayer with some modifications because it doesn't quite work
 omx = OMXPlayer('raspi.mp4', start_playback=True)
 time.sleep(3)
 omx.stop()
