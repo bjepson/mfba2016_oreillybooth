@@ -1,0 +1,10 @@
+import time
+from pyomxplayer import OMXPlayer
+
+omx = OMXPlayer('raspi.mp4', start_playback=True)
+time.sleep(3)
+omx.stop()
+omx = OMXPlayer('margolis.mp4', start_playback=True)
+time.sleep(3)
+omx.stop()
+
