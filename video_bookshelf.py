@@ -4,7 +4,6 @@ from collections import deque
 from os import system
 from picamera.array import PiRGBArray
 from picamera import PiCamera
-import curses
 import cv2
 import numpy as np
 import pprint
@@ -90,17 +89,23 @@ def on_mouse(event,x,y,flag,param):
         log.append(hsv_data)
     #log.popleft()
       
-def findColor(img, img2, lower, upper, color, screen, row):
+def findColor(img, img2, lower, upper, color, row):
 
     found = False
     shapeMask = cv2.inRange(img, lower, upper)
 
     # find the contours in the mask
     (_, cnts, _) = cv2.findContours(shapeMask.copy(), cv2.RETR_EXTERNAL,
-        cv2.CHAIN_APPROX_SIMPLE)
+        cv2.CHAIN_APPROX_TC89_L1)
+
+    # contour approximation methods:
+    # CHAIN_APPROX_NONE
+    # CHAIN_APPROX_SIMPLE
+    # CHAIN_APPROX_TC89_L1
+    # CHAIN_APPROX_TC89_KCOS
 
     status = color + ":"
-    status2 = color + " range: " + str(lower) + " to " + str(upper)
+    #status2 = color + " range: " + str(lower) + " to " + str(upper)
     # loop over the contours
     for c in cnts:
         area = cv2.contourArea(c)
@@ -111,7 +116,7 @@ def findColor(img, img2, lower, upper, color, screen, row):
             cv2.drawContours(img2, [c], -1, (
                 (lower[0] * 1.0+ upper[0] * 1.0)/2, 
                 255, 255 ), 2)
-    screen.addstr(row, 2, status)
+    cv2.putText(img2, status, (10, 10+row * 15), cv2.FONT_HERSHEY_SIMPLEX, .5, (55,25,255), 1)
     return found
 
 # initialize the camera and grab a reference to the raw camera capture
@@ -122,12 +127,8 @@ time.sleep(0.1)
 cv2.namedWindow("cv", 1)
 cv2.setMouseCallback("cv", on_mouse, 0);
 
-screen = curses.initscr()
-screen.border(0)
 
 log = deque(maxlen=10)
-pad = curses.newpad(12, 26)
-pad.border(0)
 while (True):
     rawCapture = PiRGBArray(camera)
 
@@ -139,26 +140,20 @@ while (True):
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     hsv_copy = hsv.copy()
 
-    screen.clear()
-    screen.border(0)
     disp_row = 1
     for k, v in hsv_ranges.iteritems():
         lower = np.array(v['low'])
         upper = np.array(v['high'])
-        color_found = findColor(hsv, hsv_copy, lower, upper, k, screen, disp_row)
+        color_found = findColor(hsv, hsv_copy, lower, upper, k, disp_row)
         disp_row += 1
 
-    pad.clear()
-    pad.border(0)
     for i in range (0, len(log)):
         hsv_data = log[i]
         if hsv_data != "":
             logstr =   "H:" + str(hsv_data[0]) + \
                       " S:" + str(hsv_data[1]) + \
                       " V:" + str(hsv_data[2])
-            pad.addstr(i + 1, 1, logstr)
-    screen.refresh()
-    pad.refresh(0,0, disp_row,1, disp_row+21,80)
+            cv2.putText(hsv_copy, logstr, (10, 12 + (disp_row + i) * 15), cv2.FONT_HERSHEY_SIMPLEX, .5, (55, 25, 255), 1)
 
     # overlay the HSV data of pixel under cursor
     hsv_data=hsv[y_co,x_co]
@@ -192,7 +187,6 @@ while (True):
     else:
         calibrate_colors()
                     
-curses.endwin()
 print "\nhsv_ranges ="
 pp.pprint(hsv_ranges)
 
