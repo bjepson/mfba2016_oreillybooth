@@ -13,18 +13,18 @@ from fractions import Fraction
 modes = ['auto', 'off', 'night', 'snow', 'backlight', 'beach', 'nightpreview']
 mode = 0
 
-hsv_ranges = {'blue': {'high': [99, 255, 255], 'low': [94, 135, 127]},
- 'fl yellow': {'high': [50, 255, 255], 'low': [39, 40, 81]},
- 'green': {'high': [90, 255, 255], 'low': [80, 168, 99]},
+hsv_ranges = {'blue': {'high': [99, 255, 255], 'low': [90, 60, 120]},
+ 'fl yellow': {'high': [50, 255, 255], 'low': [30, 85, 81]},
+ 'green': {'high': [85, 255, 255], 'low': [54, 100, 100]},
  'navy': {'high': [110, 255, 255], 'low': [102, 60, 70]},
- 'orange': {'high': [8, 255, 255], 'low': [4, 93, 130]},
- 'pink': {'high': [170, 255, 255], 'low': [150, 60, 120]},
- 'violet': {'high': [135, 255, 255], 'low': [115, 67, 106]},
- 'yellow': {'high': [32, 255, 255], 'low': [27, 128, 125]}}
+ 'orange': {'high': [15, 255, 255], 'low': [4, 150, 200]},
+ 'pink': {'high': [180, 255, 255], 'low': [150, 60, 120]},
+ 'violet': {'high': [149, 255, 255], 'low': [115, 67, 106]},
+ 'yellow': {'high': [30, 255, 255], 'low': [20, 128, 125]}}
 
-rects = {'blue': (55, 483),
+rects = {'blue': (55, 400),
  'fl yellow': (30, 383),
- 'green': (55, 483),
+ 'green': (55, 400),
  'navy': (20, 500),
  'orange': (55, 433),
  'pink': (20, 500),
@@ -43,14 +43,6 @@ shortcuts = {
         'y': 'yellow',
         'f': 'fl yellow',
         }
-
-pp = pprint.PrettyPrinter()
-
-rect_x = 30
-rect_y = 333
-x_co = 0
-y_co = 0
-hsv_data = 0
 
 def calibrate_colors():
     global hsv_samples
@@ -120,6 +112,15 @@ def findColor(img, img2, lower, upper, color, row):
     cv2.putText(img2, status, (10, 10+row * 15), cv2.FONT_HERSHEY_SIMPLEX, .5, (55,25,255), 1)
     return found
 
+pp = pprint.PrettyPrinter()
+rect_x = 30
+rect_y = 333
+x_co = 0
+y_co = 0
+hsv_data = 0
+last_seen = {}
+start_time = time.time()
+
 # initialize the camera 
 camera = PiCamera(resolution=(1024,768))
 camera.exposure_mode = modes[mode]
@@ -142,6 +143,7 @@ while (True):
     image = cv2.blur(image, (2,2))
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     hsv_copy = hsv.copy()
+    bottom = hsv_copy.shape[0]
 
     disp_row = 1
     for k, v in hsv_ranges.iteritems():
@@ -149,6 +151,12 @@ while (True):
         upper = np.array(v['high'])
         color_found = findColor(hsv, hsv_copy, lower, upper, k, disp_row)
         disp_row += 1
+        if color_found:
+            last_seen[k] = time.time() - start_time
+        last_seen_str = ""
+        if k in last_seen:
+            last_seen_str = str(last_seen[k])
+        cv2.putText(hsv_copy, k + " last seen: " + last_seen_str, (10, bottom - (disp_row* 15)), cv2.FONT_HERSHEY_SIMPLEX, .5, (55,25,255, 1))
 
     # Display the current list of accumulated color samples
     for i in range (0, len(hsv_samples)):
@@ -160,7 +168,6 @@ while (True):
             cv2.putText(hsv_copy, hsv_samplestr, (10, 12 + (disp_row + i) * 15), cv2.FONT_HERSHEY_SIMPLEX, .5, (55, 25, 255), 1)
 
     # Display current exposure mode
-    bottom = hsv_copy.shape[0]
     cv2.putText(hsv_copy, "Exposure mode: " + camera.exposure_mode, (10, bottom - 15), cv2.FONT_HERSHEY_SIMPLEX, .5, (55,25,255, 1))
 
     # overlay the HSV data of pixel under cursor
@@ -177,7 +184,7 @@ while (True):
     image = cv2.cvtColor(hsv_copy, cv2.COLOR_HSV2BGR)
     cv2.imshow("cv", image)
 
-    k = cv2.waitKey(25)
+    k = cv2.waitKey(50)
     if k == -1:
         continue
     elif k == 27:
