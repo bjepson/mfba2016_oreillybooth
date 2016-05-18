@@ -120,6 +120,7 @@ y_co = 0
 hsv_data = 0
 last_seen = {}
 start_time = time.time()
+lost_item_delay = 5; # something has gone missing for 5 seconds
 
 # initialize the camera 
 camera = PiCamera(resolution=(1024,768))
@@ -185,29 +186,37 @@ while (True):
     cv2.imshow("cv", image)
 
     k = cv2.waitKey(50)
-    if k == -1:
-        continue
-    elif k == 27:
-        break
-    elif k == ord('c'):
-       hsv_samples.clear()
-    elif k == ord('w'):
-        rect_y = rect_y + 25
-    elif k == ord('s'):
-        rect_y = rect_y - 25
-    elif k == ord('d'):
-        rect_x = rect_x + 25
-    elif k == ord('a'):
-        rect_x = rect_x - 25
-    elif k == ord('m'):
-        mode += 1;
-        if mode >= len(modes):
-            mode = 0
-        camera.exposure_mode = modes[mode]
-        time.sleep(2)
-    else:
-        calibrate_colors()
-                    
+    if k != -1:
+        if k == 27:
+            break
+        elif k == ord('c'):
+           hsv_samples.clear()
+        elif k == ord('w'):
+            rect_y = rect_y + 25
+        elif k == ord('s'):
+            rect_y = rect_y - 25
+        elif k == ord('d'):
+            rect_x = rect_x + 25
+        elif k == ord('a'):
+            rect_x = rect_x - 25
+        elif k == ord('m'):
+            mode += 1;
+            if mode >= len(modes):
+                mode = 0
+            camera.exposure_mode = modes[mode]
+            time.sleep(2)
+        else:
+            calibrate_colors()
+       
+    lost_one = False
+    for k, v in last_seen.iteritems():
+        now = time.time() - start_time
+        if now - v > lost_item_delay:
+            print k + " has gone missing"
+            lost_one = True
+    if lost_one:
+        last_seen = {}
+    
 print "\nhsv_ranges ="
 pp.pprint(hsv_ranges)
 print "\nrects ="
