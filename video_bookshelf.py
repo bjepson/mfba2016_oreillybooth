@@ -13,16 +13,24 @@ from fractions import Fraction
 modes = ['auto', 'off', 'night', 'snow', 'backlight', 'beach', 'nightpreview']
 mode = 0
 
-hsv_ranges = {
-     'blue':      {'high': [101, 255, 255], 'low': [95, 50, 50]},
-     'fl yellow': {'high': [40, 175, 225], 'low': [26, 140, 190]},
-     'green':     {'high': [75, 255, 255], 'low': [40, 50, 50]},
-     'navy':      {'high': [110, 255, 255], 'low': [102, 60, 70]},
-     'orange':    {'high': [18, 255, 255], 'low': [5, 180, 200]},
-     'pink':      {'high': [170, 255, 255], 'low': [150, 60, 120]},
-     #'red':       {'high': [5, 255, 255], 'low': [0, 100, 100]},
-     'violet':    {'high': [150, 150, 180], 'low': [115, 60, 75]},
-     'yellow':    {'high': [25, 255, 255], 'low': [20, 150, 150]}}
+hsv_ranges = {'blue': {'high': [99, 255, 255], 'low': [94, 135, 127]},
+ 'fl yellow': {'high': [50, 255, 255], 'low': [39, 40, 81]},
+ 'green': {'high': [90, 255, 255], 'low': [80, 168, 99]},
+ 'navy': {'high': [110, 255, 255], 'low': [102, 60, 70]},
+ 'orange': {'high': [8, 255, 255], 'low': [4, 93, 130]},
+ 'pink': {'high': [170, 255, 255], 'low': [150, 60, 120]},
+ 'violet': {'high': [135, 255, 255], 'low': [115, 67, 106]},
+ 'yellow': {'high': [32, 255, 255], 'low': [27, 128, 125]}}
+
+rects = {'blue': (55, 483),
+ 'fl yellow': (30, 383),
+ 'green': (55, 483),
+ 'navy': (20, 500),
+ 'orange': (55, 433),
+ 'pink': (20, 500),
+ 'violet': (30, 383),
+ 'yellow': (55, 483)}
+
 
 shortcuts = {
         'g': 'green',
@@ -34,18 +42,6 @@ shortcuts = {
         'v': 'violet',
         'y': 'yellow',
         'f': 'fl yellow',
-        }
-
-rects = {
-        'green': (20, 500),
-        'blue': (20, 500),
-        'navy': (20, 500),
-        'pink': (20, 500),
-        'orange': (20, 500),
-        #'red': (20, 500),
-        'violet': (20, 500),
-        'yellow': (20, 500),
-        'fl yellow': (20, 500),
         }
 
 pp = pprint.PrettyPrinter()
@@ -130,9 +126,10 @@ camera.exposure_mode = modes[mode]
 # allow the camera to warm up
 time.sleep(1)
 
-cv2.namedWindow("cv", 1)
+cv2.namedWindow("cv", cv2.WND_PROP_FULLSCREEN)
+cv2.moveWindow("cv", 0, 0)
 cv2.setMouseCallback("cv", on_mouse, 0);
-
+cv2.setWindowProperty("cv",cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
 
 hsv_samples = deque(maxlen=10)
 while (True):
@@ -180,7 +177,7 @@ while (True):
     image = cv2.cvtColor(hsv_copy, cv2.COLOR_HSV2BGR)
     cv2.imshow("cv", image)
 
-    k = cv2.waitKey(10)
+    k = cv2.waitKey(25)
     if k == -1:
         continue
     elif k == 27:
@@ -200,6 +197,7 @@ while (True):
         if mode >= len(modes):
             mode = 0
         camera.exposure_mode = modes[mode]
+        time.sleep(2)
     else:
         calibrate_colors()
                     
