@@ -10,13 +10,13 @@ import pprint
 import time
 
 hsv_ranges = {
-     'blue':      {'high': [99, 255, 255], 'low': [85, 50, 50]},
+     'blue':      {'high': [101, 255, 255], 'low': [95, 50, 50]},
      'fl yellow': {'high': [40, 175, 225], 'low': [26, 140, 190]},
      'green':     {'high': [75, 255, 255], 'low': [40, 50, 50]},
-     'navy':      {'high': [110, 255, 255], 'low': [100, 60, 70]},
+     'navy':      {'high': [110, 255, 255], 'low': [102, 60, 70]},
      'orange':    {'high': [18, 255, 255], 'low': [5, 180, 200]},
      'pink':      {'high': [170, 255, 255], 'low': [150, 60, 120]},
-     'red':       {'high': [5, 255, 255], 'low': [0, 100, 100]},
+     #'red':       {'high': [5, 255, 255], 'low': [0, 100, 100]},
      'violet':    {'high': [150, 150, 180], 'low': [115, 60, 75]},
      'yellow':    {'high': [25, 255, 255], 'low': [20, 150, 150]}}
 
@@ -26,7 +26,7 @@ shortcuts = {
         'n': 'navy',
         'p': 'pink',
         'o': 'orange',
-        'r': 'red',
+        #'r': 'red',
         'v': 'violet',
         'y': 'yellow',
         'f': 'fl yellow',
@@ -38,7 +38,7 @@ rects = {
         'navy': (20, 500),
         'pink': (20, 500),
         'orange': (20, 500),
-        'red': (20, 500),
+        #'red': (20, 500),
         'violet': (20, 500),
         'yellow': (20, 500),
         'fl yellow': (20, 500),
@@ -55,26 +55,27 @@ hsv_data = 0
 def calibrate_colors():
     global log
     for s,c in shortcuts.iteritems():
-        if k == ord(s) and len(log) > 0:
-            low  = []
-            high = []
-            for i in range (0, len(log)):
-                if len(low) == 0:
-                    low = list(log[i])
-                else:
-                    low[0] = min(low[0], log[i][0])
-                    low[1] = min(low[1], int(log[i][1] *.66))
-                    low[2] = min(low[2], int(log[i][2] *.66))
-                if len(high) == 0:
-                    high = list(log[i])
-                else:
-                    high[0] = max(high[0], log[i][0])
-                    high[1] = 255 #max(high[1], log[i][1])
-                    high[2] = 255 #max(high[2], log[i][2])
-            hsv_ranges[c]['high'] = list(high)
-            hsv_ranges[c]['low'] = list(low)
+        if k == ord(s):
             rects[c] = (rect_x, rect_y)
-            log.clear()
+            if len(log) > 0:
+                low  = []
+                high = []
+                for i in range (0, len(log)):
+                    if len(low) == 0:
+                        low = list(log[i])
+                    else:
+                        low[0] = min(low[0], log[i][0])
+                        low[1] = min(low[1], int(log[i][1] *.66))
+                        low[2] = min(low[2], int(log[i][2] *.66))
+                    if len(high) == 0:
+                        high = list(log[i])
+                    else:
+                        high[0] = max(high[0], log[i][0])
+                        high[1] = 255 #max(high[1], log[i][1])
+                        high[2] = 255 #max(high[2], log[i][2])
+                hsv_ranges[c]['high'] = list(high)
+                hsv_ranges[c]['low'] = list(low)
+                log.clear()
 
 def on_mouse(event,x,y,flag,param):
   global x_co
@@ -96,7 +97,7 @@ def findColor(img, img2, lower, upper, color, row):
 
     # find the contours in the mask
     (_, cnts, _) = cv2.findContours(shapeMask.copy(), cv2.RETR_EXTERNAL,
-        cv2.CHAIN_APPROX_TC89_L1)
+        cv2.CHAIN_APPROX_NONE)
 
     # contour approximation methods:
     # CHAIN_APPROX_NONE
@@ -169,7 +170,7 @@ while (True):
     image = cv2.cvtColor(hsv_copy, cv2.COLOR_HSV2BGR)
     cv2.imshow("cv", image)
 
-    k = cv2.waitKey(5)
+    k = cv2.waitKey(10)
     if k == -1:
         continue
     elif k == 27:
@@ -189,4 +190,6 @@ while (True):
                     
 print "\nhsv_ranges ="
 pp.pprint(hsv_ranges)
+print "\nrects ="
+pp.pprint(rects)
 
