@@ -8,6 +8,10 @@ import cv2
 import numpy as np
 import pprint
 import time
+from fractions import Fraction
+
+modes = ['auto', 'off', 'night', 'snow', 'backlight', 'beach', 'nightpreview']
+mode = 0
 
 hsv_ranges = {
      'blue':      {'high': [101, 255, 255], 'low': [95, 50, 50]},
@@ -53,42 +57,42 @@ y_co = 0
 hsv_data = 0
 
 def calibrate_colors():
-    global log
+    global hsv_samples
     for s,c in shortcuts.iteritems():
         if k == ord(s):
             rects[c] = (rect_x, rect_y)
-            if len(log) > 0:
+            if len(hsv_samples) > 0:
                 low  = []
                 high = []
-                for i in range (0, len(log)):
+                for i in range (0, len(hsv_samples)):
                     if len(low) == 0:
-                        low = list(log[i])
+                        low = list(hsv_samples[i])
                     else:
-                        low[0] = min(low[0], log[i][0])
-                        low[1] = min(low[1], int(log[i][1] *.66))
-                        low[2] = min(low[2], int(log[i][2] *.66))
+                        low[0] = min(low[0], hsv_samples[i][0])
+                        low[1] = min(low[1], int(hsv_samples[i][1] *.66))
+                        low[2] = min(low[2], int(hsv_samples[i][2] *.66))
                     if len(high) == 0:
-                        high = list(log[i])
+                        high = list(hsv_samples[i])
                     else:
-                        high[0] = max(high[0], log[i][0])
-                        high[1] = 255 #max(high[1], log[i][1])
-                        high[2] = 255 #max(high[2], log[i][2])
+                        high[0] = max(high[0], hsv_samples[i][0])
+                        high[1] = 255 #max(high[1], hsv_samples[i][1])
+                        high[2] = 255 #max(high[2], hsv_samples[i][2])
                 hsv_ranges[c]['high'] = list(high)
                 hsv_ranges[c]['low'] = list(low)
-                log.clear()
+                hsv_samples.clear()
 
 def on_mouse(event,x,y,flag,param):
   global x_co
   global y_co
   global hsv_data
-  global log
+  global hsv_samples
   if(event==cv2.EVENT_MOUSEMOVE):
     x_co=x
     y_co=y
   if(event==cv2.EVENT_LBUTTONDOWN):
     if hsv_data.any():
-        log.append(hsv_data)
-    #log.popleft()
+        hsv_samples.append(hsv_data)
+    #hsv_samples.popleft()
       
 def findColor(img, img2, lower, upper, color, row):
 
@@ -120,16 +124,17 @@ def findColor(img, img2, lower, upper, color, row):
     cv2.putText(img2, status, (10, 10+row * 15), cv2.FONT_HERSHEY_SIMPLEX, .5, (55,25,255), 1)
     return found
 
-# initialize the camera and grab a reference to the raw camera capture
+# initialize the camera 
 camera = PiCamera(resolution=(1024,768))
-# allow the camera to warmup
-time.sleep(0.1)
+camera.exposure_mode = modes[mode]
+# allow the camera to warm up
+time.sleep(1)
 
 cv2.namedWindow("cv", 1)
 cv2.setMouseCallback("cv", on_mouse, 0);
 
 
-log = deque(maxlen=10)
+hsv_samples = deque(maxlen=10)
 while (True):
     rawCapture = PiRGBArray(camera)
 
@@ -148,13 +153,18 @@ while (True):
         color_found = findColor(hsv, hsv_copy, lower, upper, k, disp_row)
         disp_row += 1
 
-    for i in range (0, len(log)):
-        hsv_data = log[i]
+    # Display the current list of accumulated color samples
+    for i in range (0, len(hsv_samples)):
+        hsv_data = hsv_samples[i]
         if hsv_data != "":
-            logstr =   "H:" + str(hsv_data[0]) + \
+            hsv_samplestr =   "H:" + str(hsv_data[0]) + \
                       " S:" + str(hsv_data[1]) + \
                       " V:" + str(hsv_data[2])
-            cv2.putText(hsv_copy, logstr, (10, 12 + (disp_row + i) * 15), cv2.FONT_HERSHEY_SIMPLEX, .5, (55, 25, 255), 1)
+            cv2.putText(hsv_copy, hsv_samplestr, (10, 12 + (disp_row + i) * 15), cv2.FONT_HERSHEY_SIMPLEX, .5, (55, 25, 255), 1)
+
+    # Display current exposure mode
+    bottom = hsv_copy.shape[0]
+    cv2.putText(hsv_copy, "Exposure mode: " + camera.exposure_mode, (10, bottom - 15), cv2.FONT_HERSHEY_SIMPLEX, .5, (55,25,255, 1))
 
     # overlay the HSV data of pixel under cursor
     hsv_data=hsv[y_co,x_co]
@@ -176,7 +186,7 @@ while (True):
     elif k == 27:
         break
     elif k == ord('c'):
-        log.clear()
+       hsv_samples.clear()
     elif k == ord('w'):
         rect_y = rect_y + 25
     elif k == ord('s'):
@@ -185,6 +195,11 @@ while (True):
         rect_x = rect_x + 25
     elif k == ord('a'):
         rect_x = rect_x - 25
+    elif k == ord('m'):
+        mode += 1;
+        if mode >= len(modes):
+            mode = 0
+        camera.exposure_mode = modes[mode]
     else:
         calibrate_colors()
                     
