@@ -4,6 +4,8 @@ from collections import deque
 from os import system
 from picamera.array import PiRGBArray
 from picamera import PiCamera
+from subprocess import Popen
+from pyomxplayer import OMXPlayer
 import cv2
 import numpy as np
 import pprint
@@ -22,27 +24,18 @@ hsv_ranges = {'blue': {'high': [99, 255, 255], 'low': [90, 60, 120]},
  'violet': {'high': [149, 255, 255], 'low': [115, 67, 106]},
  'yellow': {'high': [30, 255, 255], 'low': [20, 128, 125]}}
 
-rects = {'blue': (55, 400),
- 'fl yellow': (30, 383),
- 'green': (55, 400),
- 'navy': (20, 500),
- 'orange': (55, 433),
- 'pink': (20, 500),
- 'violet': (30, 383),
- 'yellow': (55, 483)}
+# FIXME: allow multiple videos, random selection.
+vid_path = '/home/pi/Desktop'
+vids = {'blue': 'bbblack.mp4', 'fl yellow': 'kscottz.mp4', 'green': 'raspi.mp4',
+ 'navy': 'margolis.mp4', 'orange': 'hardwarestartup.mp4', 
+ 'pink': 'popupfactory.mp4', 'violet': '', 'yellow': ''}
 
+rects = {'blue': (55, 400), 'fl yellow': (30, 383), 'green': (55, 400),
+ 'navy': (20, 500), 'orange': (55, 433), 'pink': (20, 500),
+ 'violet': (30, 383), 'yellow': (55, 483)}
 
-shortcuts = {
-        'g': 'green',
-        'b': 'blue',
-        'n': 'navy',
-        'p': 'pink',
-        'o': 'orange',
-        #'r': 'red',
-        'v': 'violet',
-        'y': 'yellow',
-        'f': 'fl yellow',
-        }
+shortcuts = { 'g': 'green', 'b': 'blue', 'n': 'navy', 'p': 'pink',
+        'o': 'orange', 'v': 'violet', 'y': 'yellow', 'f': 'fl yellow' }
 
 def calibrate_colors():
     global hsv_samples
@@ -112,6 +105,7 @@ def findColor(img, img2, lower, upper, color, row):
     cv2.putText(img2, status, (10, 10+row * 15), cv2.FONT_HERSHEY_SIMPLEX, .5, (55,25,255), 1)
     return found
 
+omx=False
 pp = pprint.PrettyPrinter()
 rect_x = 30
 rect_y = 333
@@ -127,6 +121,7 @@ zoom = 1
 camera = PiCamera(resolution=(1024,768))
 camera.zoom = (0, 0, zoom, zoom)
 camera.exposure_mode = modes[mode]
+camera.flash_mode = 'on'
 # allow the camera to warm up
 time.sleep(1)
 
@@ -174,11 +169,14 @@ while (True):
     cv2.putText(hsv_copy, "Exposure mode: " + camera.exposure_mode, (10, bottom - 15), cv2.FONT_HERSHEY_SIMPLEX, .5, (55,25,255, 1))
 
     # overlay the HSV data of pixel under cursor
-    hsv_data=hsv[y_co,x_co]
-    cv2.putText(hsv_copy, 
-                str(hsv_data[0])+","+str(hsv_data[1])+","+str(hsv_data[2]), 
-                (x_co,y_co),
-                cv2.FONT_HERSHEY_SIMPLEX, .5, (55,25,255), 2)
+    try:
+        hsv_data=hsv[y_co,x_co]
+        cv2.putText(hsv_copy, 
+                    str(hsv_data[0])+","+str(hsv_data[1])+","+str(hsv_data[2]), 
+                    (x_co,y_co),
+                    cv2.FONT_HERSHEY_SIMPLEX, .5, (55,25,255), 2)
+    except IndexError as e:
+        print e
 
     # draw the selection rectangle
     hsv_copy = cv2.rectangle(hsv_copy, 
@@ -220,10 +218,17 @@ while (True):
         now = time.time() - start_time
         if now - v > lost_item_delay:
             print k + " has gone missing"
+            if vids[k]:
+                if omx:
+                    omx.stop()
+                omx = OMXPlayer(vid_path + "/" + vids[k], start_playback=True)
             lost_one = True
     if lost_one:
         last_seen = {}
-    
+
+if omx:
+    omx.stop()
+
 print "\nhsv_ranges ="
 pp.pprint(hsv_ranges)
 print "\nrects ="
