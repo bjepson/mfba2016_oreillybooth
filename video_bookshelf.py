@@ -121,9 +121,11 @@ hsv_data = 0
 last_seen = {}
 start_time = time.time()
 lost_item_delay = 5; # something has gone missing for 5 seconds
+zoom = 1
 
 # initialize the camera 
 camera = PiCamera(resolution=(1024,768))
+camera.zoom = (0, 0, zoom, zoom)
 camera.exposure_mode = modes[mode]
 # allow the camera to warm up
 time.sleep(1)
@@ -200,11 +202,16 @@ while (True):
         elif k == ord('a'):
             rect_x = rect_x - 25
         elif k == ord('m'):
-            mode += 1;
+            mode += 1
             if mode >= len(modes):
                 mode = 0
             camera.exposure_mode = modes[mode]
-            time.sleep(2)
+        elif k == ord('z'):
+            zoom = np.float16(zoom) - .2
+            if zoom <= 0:
+                zoom = 1
+            print str(1-zoom) + ":" + str(zoom)
+            camera.zoom = (.5 * (1-zoom), 0, zoom, zoom)
         else:
             calibrate_colors()
        
