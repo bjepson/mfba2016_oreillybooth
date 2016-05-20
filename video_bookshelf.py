@@ -121,7 +121,7 @@ y_co = 0
 hsv_data = 0
 last_seen = {}
 start_time = time.time()
-lost_item_delay = 30; # something has gone missing for this long
+lost_item_delay = 5; # something has gone missing for this long
 zoom = 1
 
 # initialize the camera 
@@ -160,7 +160,8 @@ while (True):
             last_seen[k] = time.time() - start_time
         last_seen_str = ""
         if k in last_seen:
-            last_seen_str = str(last_seen[k])
+            now = time.time() - start_time
+            last_seen_str = str(int(now) - int(last_seen[k]))
         cv2.putText(hsv_copy, k + " last seen: " + last_seen_str, (10, bottom - (disp_row* 15)), cv2.FONT_HERSHEY_SIMPLEX, .5, (55,25,255, 1))
 
     # Display the current list of accumulated color samples
@@ -182,9 +183,7 @@ while (True):
                     str(hsv_data[0])+","+str(hsv_data[1])+","+str(hsv_data[2]), 
                     (x_co,y_co),
                     cv2.FONT_HERSHEY_SIMPLEX, .5, (55,25,255), 2)
-    except picamera.exc.PiCameraValueError as e:
-        print e
-    except IndexError as e:
+    except Error as e:
         print e
 
     # draw the selection rectangle
