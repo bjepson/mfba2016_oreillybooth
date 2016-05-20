@@ -15,32 +15,43 @@ from fractions import Fraction
 modes = ['auto', 'off', 'night', 'snow', 'backlight', 'beach', 'nightpreview']
 mode = 0
 
+# 'orange': {'high': [12, 255, 255], 'low': [11, 130, 130]},
+# 'violet': {'high': [149, 255, 255], 'low': [139, 43, 70]},
+
 hsv_ranges = {'blue': {'high': [105, 255, 255], 'low': [96, 64, 97]},
  'fl yellow': {'high': [50, 255, 255], 'low': [30, 85, 81]},
  'green': {'high': [85, 255, 255], 'low': [54, 100, 100]},
- 'navy': {'high': [110, 255, 255], 'low': [102, 60, 70]},
- 'orange': {'high': [12, 255, 255], 'low': [11, 130, 130]},
+ 'navy': {'high': [110, 255, 255], 'low': [106, 60, 70]},
  'pink': {'high': [180, 255, 255], 'low': [150, 60, 120]},
- 'violet': {'high': [143, 255, 255], 'low': [139, 43, 70]},
- 'yellow': {'high': [27, 255, 255], 'low': [26, 166, 125]}}
+ 'yellow': {'high': [27, 255, 255], 'low': [20, 166, 125]}}
 
 rects = {'blue': (55, 333),
  'fl yellow': (30, 383),
- 'green': (55, 400),
+ 'green': (30, 300),
  'navy': (20, 500),
- 'orange': (30, 333),
  'pink': (20, 500),
- 'violet': (30, 333),
- 'yellow': (55, 333)}
+ 'yellow': (30, 333)}
+ 
+# 'violet': (30, 333),
+# 'orange': (30, 333),
 
 # FIXME: allow multiple videos, random selection.
 vid_path = '/home/pi/Desktop'
-vids = {'orange': 'bbblack.mp4', 'violet': 'kscottz.mp4', 'blue': 'raspi.mp4',
+vids = {'yellow': 'bbblack.mp4', 'green': 'kscottz.mp4', 'blue': 'raspi.mp4',
  'navy': 'margolis.mp4', 'fl yellow': 'hardwarestartup.mp4', 
- 'pink': 'popupfactory.mp4', 'green': '', 'yellow': ''}
+ 'pink': 'popupfactory.mp4'}
+ 
+ #, 'orange': '', 'violet': ''}
 
-shortcuts = { 'g': 'green', 'b': 'blue', 'n': 'navy', 'p': 'pink',
-        'o': 'orange', 'v': 'violet', 'y': 'yellow', 'f': 'fl yellow' }
+shortcuts = { 'g': 'green', 
+              'b': 'blue', 
+              'n': 'navy', 
+              'p': 'pink',
+              'y': 'yellow', 
+              'f': 'fl yellow' }
+
+#              'o': 'orange', 
+#              'v': 'violet', 
 
 def calibrate_colors():
     global hsv_samples
@@ -113,6 +124,7 @@ def findColor(img, img2, lower, upper, color, row):
     return found
 
 omx=False
+curr_vid_color = ""
 pp = pprint.PrettyPrinter()
 rect_x = 30
 rect_y = 333
@@ -231,7 +243,11 @@ while (True):
                 if omx:
                     omx.stop()
                 omx = OMXPlayer(vid_path + "/" + vids[k], start_playback=True)
+                curr_vid_color = k
             lost_one = True
+        else:
+            if k == curr_vid_color and omx:
+                omx.stop()
     if lost_one:
         last_seen = {}
 
