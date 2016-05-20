@@ -15,24 +15,29 @@ from fractions import Fraction
 modes = ['auto', 'off', 'night', 'snow', 'backlight', 'beach', 'nightpreview']
 mode = 0
 
-hsv_ranges = {'blue': {'high': [99, 255, 255], 'low': [90, 60, 120]},
+hsv_ranges = {'blue': {'high': [105, 255, 255], 'low': [96, 64, 97]},
  'fl yellow': {'high': [50, 255, 255], 'low': [30, 85, 81]},
  'green': {'high': [85, 255, 255], 'low': [54, 100, 100]},
  'navy': {'high': [110, 255, 255], 'low': [102, 60, 70]},
- 'orange': {'high': [15, 255, 255], 'low': [4, 150, 200]},
+ 'orange': {'high': [12, 255, 255], 'low': [11, 130, 130]},
  'pink': {'high': [180, 255, 255], 'low': [150, 60, 120]},
- 'violet': {'high': [149, 255, 255], 'low': [115, 67, 106]},
- 'yellow': {'high': [30, 255, 255], 'low': [20, 128, 125]}}
+ 'violet': {'high': [143, 255, 255], 'low': [139, 43, 70]},
+ 'yellow': {'high': [27, 255, 255], 'low': [26, 166, 125]}}
+
+rects = {'blue': (55, 333),
+ 'fl yellow': (30, 383),
+ 'green': (55, 400),
+ 'navy': (20, 500),
+ 'orange': (30, 333),
+ 'pink': (20, 500),
+ 'violet': (30, 333),
+ 'yellow': (55, 333)}
 
 # FIXME: allow multiple videos, random selection.
 vid_path = '/home/pi/Desktop'
-vids = {'blue': 'bbblack.mp4', 'fl yellow': 'kscottz.mp4', 'green': 'raspi.mp4',
- 'navy': 'margolis.mp4', 'orange': 'hardwarestartup.mp4', 
- 'pink': 'popupfactory.mp4', 'violet': '', 'yellow': ''}
-
-rects = {'blue': (55, 400), 'fl yellow': (30, 383), 'green': (55, 400),
- 'navy': (20, 500), 'orange': (55, 433), 'pink': (20, 500),
- 'violet': (30, 383), 'yellow': (55, 483)}
+vids = {'orange': 'bbblack.mp4', 'violet': 'kscottz.mp4', 'blue': 'raspi.mp4',
+ 'navy': 'margolis.mp4', 'fl yellow': 'hardwarestartup.mp4', 
+ 'pink': 'popupfactory.mp4', 'green': '', 'yellow': ''}
 
 shortcuts = { 'g': 'green', 'b': 'blue', 'n': 'navy', 'p': 'pink',
         'o': 'orange', 'v': 'violet', 'y': 'yellow', 'f': 'fl yellow' }
@@ -67,12 +72,14 @@ def on_mouse(event,x,y,flag,param):
   global y_co
   global hsv_data
   global hsv_samples
+  global last_seen
   if(event==cv2.EVENT_MOUSEMOVE):
     x_co=x
     y_co=y
   if(event==cv2.EVENT_LBUTTONDOWN):
     if hsv_data.any():
         hsv_samples.append(hsv_data)
+    last_seen = {}
     #hsv_samples.popleft()
       
 def findColor(img, img2, lower, upper, color, row):
@@ -114,12 +121,12 @@ y_co = 0
 hsv_data = 0
 last_seen = {}
 start_time = time.time()
-lost_item_delay = 5; # something has gone missing for 5 seconds
+lost_item_delay = 30; # something has gone missing for this long
 zoom = 1
 
 # initialize the camera 
 camera = PiCamera(resolution=(1024,768))
-camera.zoom = (0, 0, zoom, zoom)
+camera.zoom = (.5 * (1-zoom), 0, zoom, zoom)
 camera.exposure_mode = modes[mode]
 camera.flash_mode = 'on'
 # allow the camera to warm up
@@ -175,6 +182,8 @@ while (True):
                     str(hsv_data[0])+","+str(hsv_data[1])+","+str(hsv_data[2]), 
                     (x_co,y_co),
                     cv2.FONT_HERSHEY_SIMPLEX, .5, (55,25,255), 2)
+    except picamera.exc.PiCameraValueError as e:
+        print e
     except IndexError as e:
         print e
 
@@ -185,8 +194,9 @@ while (True):
     image = cv2.cvtColor(hsv_copy, cv2.COLOR_HSV2BGR)
     cv2.imshow("cv", image)
 
-    k = cv2.waitKey(50)
+    k = cv2.waitKey(10)
     if k != -1:
+        last_seen = {}
         if k == 27:
             break
         elif k == ord('c'):
@@ -217,7 +227,7 @@ while (True):
     for k, v in last_seen.iteritems():
         now = time.time() - start_time
         if now - v > lost_item_delay:
-            print k + " has gone missing"
+            print k + " has gone missing " + str(now - v) + " seconds"
             if vids[k]:
                 if omx:
                     omx.stop()
