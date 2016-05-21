@@ -133,7 +133,7 @@ y_co = 0
 hsv_data = 0
 last_seen = {}
 start_time = time.time()
-lost_item_delay = 5; # something has gone missing for this long
+lost_item_delay = 2; # something has gone missing for this long
 zoom = 1
 
 # initialize the camera 
@@ -156,6 +156,7 @@ while (True):
     # grab an image from the camera
     camera.capture(rawCapture, format="bgr")
     image = rawCapture.array
+    image = cv2.flip(image, 1)
     #image = cv2.resize(image, (0, 0), fx=0.75, fy=0.75)
     image = cv2.blur(image, (2,2))
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -202,6 +203,10 @@ while (True):
     hsv_copy = cv2.rectangle(hsv_copy, 
             (x_co, y_co), (x_co+rect_x, y_co+rect_y), (179,255,255), 1)
 
+    cv2.putText(hsv_copy, 
+                "See what happens if you pick up a book...",
+                (50,500),
+                cv2.FONT_HERSHEY_SIMPLEX, 1.2, (55,25,255), 2)
     image = cv2.cvtColor(hsv_copy, cv2.COLOR_HSV2BGR)
     cv2.imshow("cv", image)
 
