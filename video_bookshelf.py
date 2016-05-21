@@ -12,16 +12,16 @@ import pprint
 import time
 from fractions import Fraction
 
-modes = ['auto', 'off', 'night', 'snow', 'backlight', 'beach', 'nightpreview']
-mode = 0
+modes = ['auto', 'off', 'sunlight', 'fluorescent', 'sunlight', 'cloudy', 'shade', 'tungsten', 'incandescent', 'flash', 'horizon']
+mode = 3
 
 # 'orange': {'high': [12, 255, 255], 'low': [11, 130, 130]},
 # 'violet': {'high': [149, 255, 255], 'low': [139, 43, 70]},
 
-hsv_ranges = {'blue': {'high': [105, 255, 255], 'low': [96, 64, 97]},
- 'fl yellow': {'high': [50, 255, 255], 'low': [30, 85, 81]},
+hsv_ranges = {'blue': {'high': [100, 255, 255], 'low': [87, 60, 75]},
+ 'fl yellow': {'high': [35, 255, 255], 'low': [30, 100, 110]},
  'green': {'high': [85, 255, 255], 'low': [54, 100, 100]},
- 'navy': {'high': [110, 255, 255], 'low': [106, 60, 70]},
+ 'navy': {'high': [110, 255, 255], 'low': [101, 50, 50]},
  'pink': {'high': [180, 255, 255], 'low': [150, 60, 120]},
  'yellow': {'high': [27, 255, 255], 'low': [20, 166, 125]}}
 
@@ -133,13 +133,13 @@ y_co = 0
 hsv_data = 0
 last_seen = {}
 start_time = time.time()
-lost_item_delay = 2; # something has gone missing for this long
+lost_item_delay = 3; # something has gone missing for this long
 zoom = 1
 
 # initialize the camera 
 camera = PiCamera(resolution=(1024,768))
 camera.zoom = (.5 * (1-zoom), 0, zoom, zoom)
-camera.exposure_mode = modes[mode]
+camera.awb_mode = modes[mode]
 camera.flash_mode = 'on'
 # allow the camera to warm up
 time.sleep(1)
@@ -186,8 +186,8 @@ while (True):
                       " V:" + str(hsv_data[2])
             cv2.putText(hsv_copy, hsv_samplestr, (10, 12 + (disp_row + i) * 15), cv2.FONT_HERSHEY_SIMPLEX, .5, (55, 25, 255), 1)
 
-    # Display current exposure mode
-    cv2.putText(hsv_copy, "Exposure mode: " + camera.exposure_mode, (10, bottom - 15), cv2.FONT_HERSHEY_SIMPLEX, .5, (55,25,255, 1))
+    # Display current awb mode
+    cv2.putText(hsv_copy, "AWB mode: " + camera.awb_mode, (10, bottom - 15), cv2.FONT_HERSHEY_SIMPLEX, .5, (55,25,255, 1))
 
     # overlay the HSV data of pixel under cursor
     try:
@@ -204,9 +204,9 @@ while (True):
             (x_co, y_co), (x_co+rect_x, y_co+rect_y), (179,255,255), 1)
 
     cv2.putText(hsv_copy, 
-                "See what happens if you pick up a book...",
+                "See what happens if you pick up a highlighted book...",
                 (50,500),
-                cv2.FONT_HERSHEY_SIMPLEX, 1.2, (55,25,255), 2)
+                cv2.FONT_HERSHEY_SIMPLEX, 1.1, (55,25,255), 2)
     image = cv2.cvtColor(hsv_copy, cv2.COLOR_HSV2BGR)
     cv2.imshow("cv", image)
 
@@ -229,7 +229,7 @@ while (True):
             mode += 1
             if mode >= len(modes):
                 mode = 0
-            camera.exposure_mode = modes[mode]
+            camera.awb_mode = modes[mode]
         elif k == ord('z'):
             zoom = np.float16(zoom) - .2
             if zoom <= 0:
