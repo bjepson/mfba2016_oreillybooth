@@ -1,0 +1,7 @@
+== TODO
+
+* Clean up code
+* Find something better for marking the spines
+* Use calibration rectangle (may need to add rotation) to grab a large area to sample
+* Write up blog post
+
