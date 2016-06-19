@@ -15,31 +15,31 @@ from fractions import Fraction
 modes = ['auto', 'off', 'sunlight', 'fluorescent', 'sunlight', 'cloudy', 'shade', 'tungsten', 'incandescent', 'flash', 'horizon']
 mode = 3
 
-# 'orange': {'high': [12, 255, 255], 'low': [11, 130, 130]},
 # 'violet': {'high': [149, 255, 255], 'low': [139, 43, 70]},
-
-hsv_ranges = {'blue': {'high': [98, 255, 255], 'low': [80, 50, 55]},
- 'fl yellow': {'high': [35, 255, 255], 'low': [30, 100, 110]},
- 'green': {'high': [80, 255, 255], 'low': [54, 100, 80]},
- 'navy': {'high': [120, 255, 255], 'low': [101, 50, 40]},
- 'pink': {'high': [180, 255, 255], 'low': [150, 60, 120]},
- 'yellow': {'high': [30, 255, 255], 'low': [20, 150, 105]}}
+# 'fl yellow': {'high': [32, 255, 255], 'low': [27, 55, 112]},
+hsv_ranges = { 'blue': {'high': [110, 255, 255], 'low': [100, 90, 110]},
+ 'orange': {'high': [12, 255, 255], 'low': [11, 130, 130]},
+ 'green': {'high': [52, 255, 255], 'low': [49, 92, 77]},
+ 'navy': {'high': [120, 255, 255], 'low': [103, 50, 40]},
+ 'pink': {'high': [160, 255, 255], 'low': [158, 120, 130]},
+ 'black': {'high': [0, 255, 255], 'low': [0, 60, 120]},
+ 'yellow': {'high': [35, 255, 255], 'low': [25, 150, 105]}}
 
 rects = {'blue': (55, 333),
- 'fl yellow': (30, 383),
- 'green': (30, 300),
+ 'fl yellow': (30, 200),
+ 'green': (55, 358),
  'navy': (20, 500),
  'pink': (20, 300),
+ 'black': (30, 333),
+ 'orange': (30, 333),
  'yellow': (30, 333)}
  
 # 'violet': (30, 333),
-# 'orange': (30, 333),
 
 # FIXME: allow multiple videos, random selection.
 vid_path = '/home/pi/Desktop'
-vids = {'yellow': 'bbblack.mp4', 'green': 'kscottz.mp4', 'blue': 'raspi.mp4',
- 'navy': 'margolis.mp4', 'fl yellow': 'hardwarestartup.mp4', 
- 'pink': 'popupfactory.mp4'}
+vids = {'yellow': 'raspi.mp4', 'green': 'bbblack.mp4', 'blue': 'margolis.mp4',
+        'orange': 'popupfactory.mp4', 'navy': 'popupfactory.mp4', 'black': 'hardwarestartup.mp4', 'pink': 'kscottz.mp4'}
  
  #, 'orange': '', 'violet': ''}
 
@@ -47,10 +47,10 @@ shortcuts = { 'g': 'green',
               'b': 'blue', 
               'n': 'navy', 
               'p': 'pink',
+              'o': 'orange', 
               'y': 'yellow', 
               'f': 'fl yellow' }
 
-#              'o': 'orange', 
 #              'v': 'violet', 
 
 def calibrate_colors():
@@ -133,7 +133,7 @@ y_co = 0
 hsv_data = 0
 last_seen = {}
 start_time = time.time()
-lost_item_delay = 3; # something has gone missing for this long
+lost_item_delay = 4; # something has gone missing for this long
 zoom = 1
 
 # initialize the camera 
