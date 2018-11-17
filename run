@@ -1,0 +1,6 @@
+#!/bin/bash -l
+workon cv
+cd /home/pi/Desktop/mfba2016
+./video_bookshelf.py
+
+
